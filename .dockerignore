@@ -1,0 +1,21 @@
+# Build context for the panel image: keep runtime data and build artifacts out.
+.git
+.github
+docs
+.env
+
+panel/.venv
+panel/data
+panel/tools/apktool
+panel/tools/grant/grant
+panel/tools/grant/grant.exe
+
+server/assets
+server/db
+server/bin
+server/.wizard.json
+
+**/__pycache__
+*.pyc
+*.pyo
+*.log

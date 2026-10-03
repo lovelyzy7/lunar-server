@@ -1,0 +1,153 @@
+# Lunar Server —— docker-compose 方案 D
+#
+# 多容器：游戏服务端 + CDN + Auth + Panel，外加受限的 docker-socket-proxy。
+# 所有容器统一以 root（user: "0:0"）运行：挂载目录不会出现混合 UID 导致的
+# 写权限问题；/settings 在 Docker 模式下隐藏本机初始化步骤。
+#
+# 使用：cp .env.example .env && 按需修改，然后 docker compose up -d --build
+name: lunar-server
+
+x-common: &common
+  restart: unless-stopped
+  user: "0:0"
+
+services:
+  # 受限 Docker API 代理：仅允许查看容器、启动/停止/重启；禁用 exec/build/
+  # images/volumes 等高危能力。绝不把原始 docker.sock 交给面板。
+  dockerproxy:
+    image: tecnativa/docker-socket-proxy:latest
+    <<: *common
+    environment:
+      CONTAINERS: "1"
+      ALLOW_START: "1"
+      ALLOW_STOP: "1"
+      ALLOW_RESTARTS: "1"
+      POST: "0"
+      AUTH: "0"
+      BUILD: "0"
+      COMMIT: "0"
+      CONFIGS: "0"
+      DISTRIBUTION: "0"
+      EXEC: "0"
+      IMAGES: "0"
+      INFO: "0"
+      NETWORKS: "0"
+      NODES: "0"
+      PLUGINS: "0"
+      SERVICES: "0"
+      SESSION: "0"
+      SWARM: "0"
+      SYSTEM: "0"
+      TASKS: "0"
+      VERSION: "0"
+      VOLUMES: "0"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [proxy-net]
+
+  # 游戏服务端（gRPC 8003 + 管理 webhook 8082）
+  server:
+    <<: *common
+    build:
+      context: ./server
+      args:
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
+    image: lunar-server/lunar-tear:local
+    pull_policy: build
+    environment:
+      LUNAR_LISTEN: 0.0.0.0:8003
+      LUNAR_PUBLIC_ADDR: ${LUNAR_PUBLIC_ADDR:-127.0.0.1:8003}
+      # 必须填成“客户端能访问到的 CDN 地址”，否则登录后拉资源会失败。
+      LUNAR_OCTO_URL: ${LUNAR_OCTO_URL:-http://127.0.0.1:8080}
+      LUNAR_AUTH_URL: http://auth-server:3000
+      LUNAR_ADMIN_LISTEN: 0.0.0.0:8082
+      LUNAR_ADMIN_TOKEN: ${LUNAR_ADMIN_TOKEN:-}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ${LUNAR_SERVER_DIR:-.}/server/db:/opt/lunar-tear/db
+      - ${LUNAR_SERVER_DIR:-.}/server/assets:/opt/lunar-tear/assets
+    ports:
+      - ${LUNAR_GRPC_PORT:-8003}:8003
+      - 127.0.0.1:${LUNAR_ADMIN_PORT:-8082}:8082
+    labels:
+      com.lunar.role: server
+    depends_on: [octo-cdn, auth-server]
+    networks: [lunar-net]
+
+  # 资源 CDN（8080）
+  octo-cdn:
+    <<: *common
+    build:
+      context: ./server
+      dockerfile: Dockerfile.cdn
+      args:
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
+    image: lunar-server/octo-cdn:local
+    pull_policy: build
+    command: ["--listen", "0.0.0.0:8080", "--public-addr", "${LUNAR_PUBLIC_CDN:-127.0.0.1:8080}"]
+    volumes:
+      - ${LUNAR_SERVER_DIR:-.}/server/assets:/opt/octo-cdn/assets:ro
+    ports:
+      - ${LUNAR_CDN_PORT:-8080}:8080
+    labels:
+      com.lunar.role: cdn
+    networks: [lunar-net]
+
+  # 账号服务（3000）
+  auth-server:
+    <<: *common
+    build:
+      context: ./server
+      dockerfile: Dockerfile.auth
+      args:
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
+    image: lunar-server/auth-server:local
+    pull_policy: build
+    command: ["--listen", "0.0.0.0:3000", "--db", "db/auth.db"]
+    volumes:
+      - ${LUNAR_SERVER_DIR:-.}/server/db:/opt/auth-server/db
+    ports:
+      - ${LUNAR_AUTH_PORT:-3000}:3000
+    labels:
+      com.lunar.role: auth
+    networks: [lunar-net]
+
+  # 管理面板（8888）：数据库管理 + 补丁工具 + 游戏服务器控制入口
+  panel:
+    <<: *common
+    build:
+      context: .
+      dockerfile: docker/panel.Dockerfile
+      args:
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
+        APT_MIRROR: ${APT_MIRROR:-}
+    image: lunar-server/panel:local
+    pull_policy: build
+    environment:
+      DOCKER_HOST: tcp://dockerproxy:2375
+      LUNAR_CONTROL_MODE: docker
+      LUNAR_SERVER_HOST: server
+      LUNAR_LOG_SOURCE: docker
+      LUNAR_ADMIN_TOKEN: ${LUNAR_ADMIN_TOKEN:-}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ${LUNAR_SERVER_DIR:-.}/server/db:/app/server/db
+      - ${LUNAR_SERVER_DIR:-.}/server/assets:/app/server/assets
+      - ${PANEL_DATA_DIR:-./panel/data}:/app/panel/data
+      # Named volumes keep the baked-in venv/tools and any runtime installs
+      # across container recreation（“放卷”）。
+      - panel-venv:/app/panel/.venv
+      - panel-tools:/app/panel/tools
+    ports:
+      - ${LUNAR_PANEL_PORT:-8888}:8888
+    depends_on: [dockerproxy, server]
+    networks: [lunar-net, proxy-net]
+
+networks:
+  lunar-net: {}
+  proxy-net:
+    internal: true
+
+volumes:
+  panel-venv:
+  panel-tools:

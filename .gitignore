@@ -1,0 +1,63 @@
+# IDE / Cursor
+.cursor/
+
+# Build artifacts
+server/bin/
+server/tmp/
+server/lunar-tear
+server/import-snapshot
+server/auth-server
+server/claim-account
+server/octo-cdn
+server/dev
+server/wizard
+server/wizard-restore
+server/.wizard.json
+
+__pycache__/
+
+frida/build/
+node_modules/
+
+# Go
+server/vendor/
+server/certs/
+server/assets/
+db/
+
+# Snapshots (recorded user state)
+snapshots/
+extracted_tables/
+master_data/
+master_data_before_eos/
+
+# Client APK and dumps
+client/
+#tools/
+
+# Generated protobuf (regenerate: cd server && make proto)
+server/gen/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local compose environment (keep .env.example tracked)
+.env
+
+# Logs
+*.log
+
+frida/
+scripts/
+
+# Integrated Lunar Base management panel (sibling of server/). Local deployment
+# copy of the separate lunar-base project; keep it out of the upstream tree.
+#panel/
+panel/.venv/
+panel/data/
+
+
+# Lunar Base Go shim: copied here by panel/setup.sh (required by Go's internal/
+# rule) and rebuilt on every setup. Sources live in panel/tools/grant/src/.
+server/cmd/lunar-base-grant/

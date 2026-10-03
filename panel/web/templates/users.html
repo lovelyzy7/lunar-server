@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Users :: Lunar Base{% endblock %}
+{% block bar_right %}USERS{% endblock %}
+{% block content %}
+<h1 class="bracket-header" data-i18n="users.title">Registered Users</h1>
+
+{% if users %}
+<div class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th data-i18n="users.th_id">User ID</th>
+        <th data-i18n="users.th_name">Name</th>
+        <th data-i18n="users.th_level">Level</th>
+        <th data-i18n="users.th_logins">Logins</th>
+        <th data-i18n="users.th_last">Last login</th>
+        <th data-i18n="users.th_reg">Registered</th>
+        <th data-i18n="users.th_uuid">UUID</th>
+        <th data-i18n="users.th_edit">Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td><a href="/users/{{ u.user_id }}">{{ u.user_id }}</a></td>
+        <td>
+          {% if u.name %}
+            <a href="/users/{{ u.user_id }}">{{ u.name }}</a>
+          {% else %}
+            <span style="color:var(--fg-mid)">&mdash;</span>
+          {% endif %}
+        </td>
+        <td>{{ u.level }}</td>
+        <td>{{ u.total_login_count }}</td>
+        <td>{% if u.last_login_at %}{{ u.last_login_at.strftime("%Y-%m-%d %H:%M") }}{% else %}<span style="color:var(--fg-mid)" data-i18n="common.never">never</span>{% endif %}</td>
+        <td>{% if u.register_at %}{{ u.register_at.strftime("%Y-%m-%d") }}{% else %}<span style="color:var(--fg-mid)">&mdash;</span>{% endif %}</td>
+        <td><code>{{ u.uuid }}</code></td>
+        <td><a href="/users/{{ u.user_id }}/profile" class="button cur-pointer" data-i18n="users.edit_btn">[ EDIT ]</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel">
+  <p style="margin:0;color:var(--fg-mid)" data-i18n="users.empty">No users found in the database.</p>
+</div>
+{% endif %}
+{% endblock %}
