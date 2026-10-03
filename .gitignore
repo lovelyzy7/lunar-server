@@ -49,14 +49,9 @@ Thumbs.db
 *.log
 
 frida/
-scripts/
-
-# Integrated Lunar Base management panel (sibling of server/). Local deployment
-# copy of the separate lunar-base project; keep it out of the upstream tree.
-#panel/
-panel/.venv/
-panel/data/
-
+# Legacy root-level scripts dir (old layout). Anchored to the repo root so the
+# panel's bundled copy (panel/scripts) stays tracked.
+/scripts/
 
 # Lunar Base Go shim: copied here by panel/setup.sh (required by Go's internal/
 # rule) and rebuilt on every setup. Sources live in panel/tools/grant/src/.
