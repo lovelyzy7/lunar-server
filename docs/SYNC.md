@@ -1,11 +1,12 @@
 # 维护与同步指南（lunar-base ⇄ lunar-server）
 
-本文说明本项目的上游关系与日常维护流程。命令中的占位符：
+本文说明本项目的上游关系与日常维护流程。命令中的占位符（**通用写法，按你的实际目录替换**）：
 
-- `<base-checkout>`：lunar-base 仓库的本地克隆目录（源仓库）；
-- `<server-repo>`：本项目 lunar-server 仓库的根目录（`panel/`、`server/` 所在目录）。
+- `<base-checkout>`：lunar-base 仓库的**本地克隆根目录**（源仓库）。特征：该目录下有 `setup.sh`、`web/app.py`、`tools/`；
+- `<server-repo>`：本项目 lunar-server 仓库的**根目录**。特征：该目录下有 `panel/`、`server/`、`panel-start.sh`。
 
-Windows 与 Linux/macOS 均适用；仅 shell 写法不同（bash / cmd），需要 rsync 的命令可用 WSL 或 Git Bash。
+> 下文命令中凡出现这两个占位符的行都加了注释说明“这是哪个目录”；命令里的注释**只是说明，不要原样粘贴**（`#` 之后的内容会被 shell 忽略，粘贴进去也无害，但建议删掉）。
+> Windows 与 Linux/macOS 均适用；仅 shell 写法不同（bash / cmd），rsync 在 Windows 上用 WSL 或 Git Bash。
 
 ---
 
@@ -25,8 +26,11 @@ Windows 与 Linux/macOS 均适用；仅 shell 写法不同（bash / cmd），需
 ## 2. 一次性准备（已在仓库中完成，重建时参考）
 
 ```bash
-cd <base-checkout>
-git checkout -b panel                      # 若已存在则跳过
+# 下面所有路径都在占位符处替换：
+#   <base-checkout> = lunar-base 克隆的仓库根（当前目录应最终变成这个位置）
+#   <server-repo>   = 本项目仓库根（其中有 panel/ 目录）
+cd <base-checkout>                         # 进入：lunar-base 的本地克隆根
+git checkout -b panel                      # 在源仓库里创建 panel 分支（已存在则 checkout）
 
 # 把本项目的 panel/ 内容叠加进 panel 分支（排除运行时目录与统一脚本）
 rsync -a \
@@ -34,13 +38,13 @@ rsync -a \
   --exclude=tools/grant/grant --exclude=tools/grant/grant.exe --exclude=tools/apktool \
   --exclude=setup.sh --exclude=setup.bat --exclude=start.sh --exclude=start.bat \
   --exclude=tools/grant/src \
-  <server-repo>/panel/ ./
+  <server-repo>/panel/ ./                 # 源：本项目 panel 目录；目标 ./ ：当前 lunar-base 仓库根
 
-git rm --ignore-unmatch run-lunar-base.sh run-lunar-base.bat   # 旧别名
+git rm --ignore-unmatch run-lunar-base.sh run-lunar-base.bat   # 删除旧别名（它们已不在 panel 中）
 git add -A && git commit -m "panel: integration overlay"
 
-git merge main                       # 把原版的最新提交并进来（冲突在此解决一次）
-git push -u origin panel
+git merge main                       # 把原版（main）的最新提交并进来；冲突在这里解决一次
+git push -u origin panel             # 推送 panel 分支（首次 -u，之后 git push 即可）
 ```
 
 之后在 `<server-repo>` 里用第 4 节的同步命令把 `panel` 分支内容取回 `panel/`。
@@ -62,29 +66,31 @@ git push -u origin panel
 ## 4. 上游更新后的主流程
 
 ```bash
-# ① 更新原版
-cd <base-checkout>
-git checkout main && git pull
+# 路径替换同第 2 节：<base-checkout> = 源仓库根；<server-repo> = 本项目仓库根。
+
+# ① 更新原版（在源仓库里操作）
+cd <base-checkout>                     # 进入：lunar-base 克隆根
+git checkout main && git pull          # 拉取原版最新提交
 
 # ② 合并进 panel 分支（冲突只在这里解决一次）
-git checkout panel
-git merge main
-git push origin panel
+git checkout panel                     # 切到集成分支
+git merge main                         # main -> panel（方向不要反）
+git push origin panel                  # 推送集成分支
 
 # ③ 同步到本项目（--delete 会删除 panel 里已不存在的文件；排除运行时目录）
 rsync -a --delete \
   --exclude=.git --exclude=.venv --exclude=data --exclude=__pycache__ \
   --exclude=tools/grant/grant --exclude=tools/grant/grant.exe --exclude=tools/apktool \
-  <base-checkout>/ <server-repo>/panel/
+  <base-checkout>/ <server-repo>/panel/   # 源：源仓库根；目标：本项目 panel 目录
 
-# ④ 验证
-cd <server-repo>
-git diff --stat -- panel
-bash panel/setup.sh --print-paths      # 应指向本仓库的 server/
-./panel-start.sh                       # 检查 /、/patch、/settings 正常
+# ④ 验证（在本项目仓库里操作）
+cd <server-repo>                       # 进入：本项目仓库根
+git diff --stat -- panel               # 只应看到预期变化
+bash panel/setup.sh --print-paths      # 路径自检：应指向本仓库的 server/
+./panel-start.sh                       # 启动检查 /、/patch、/settings
 # 如 grant shim 源码有更新：bash panel/setup.sh 会自动重建
 
-# ⑤ 提交
+# ⑤ 提交（仍在本项目仓库根）
 git add panel
 git commit -m "chore(panel): sync from lunar-base panel"
 git push
