@@ -3,8 +3,8 @@
 Run with:
     python -m uvicorn web.app:app --host 127.0.0.1 --port 8888
 
-(or use the run-lunar-base.bat / run-lunar-base.sh helper, which honor the
-LUNAR_BASE_HOST and LUNAR_BASE_PORT environment variables)
+(or use the panel-start.sh / panel-start.bat helper at the repo root, which
+auto-initializes on first run; a standalone base uses start.sh / start.bat)
 
 Access control: a session cookie holds {role, username, user_id}. The auth
 gate below redirects anonymous requests to /login, scopes game users to their

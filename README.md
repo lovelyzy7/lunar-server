@@ -12,7 +12,7 @@
 ```
 lunar-server/
 ├── server/              # 游戏服务端：代码、assets、db、wizard
-├── panel/               # Lunar Base 管理面板（FastAPI），自持 setup / patch-deps
+├── panel/               # Lunar Base 管理面板（FastAPI），自持 setup / start
 ├── scripts/             # lunar-scripts 工具（master data、APK/IPA/list.bin 补丁）
 ├── docker/              # Docker 方案 D 的 panel 镜像
 ├── docs/                # 文档（含 DOCKER.md）
@@ -55,8 +55,10 @@ server-start.bat
 > 面板与游戏服务端默认使用仓库内的 `server/`；只在非标准布局下才需要设置
 > `LUNAR_SERVER_DIR` 指向实际的检出目录（一般无需设置）。
 
-`panel/setup.sh`（Windows：`panel\setup.bat`）与 `panel/patch-deps.sh`（`panel\patch-deps.bat`）
-可单独手动运行；所有 setup 功能同样在网页 **/settings → 初始化** 中提供（自动检测，已完成即禁用）。
+`panel/setup.sh`（Windows：`panel\setup.bat`）可单独手动运行：完整安装，或 `panel/setup.sh patch-deps` 只装补丁依赖；
+`panel/start.sh`（`panel\start.bat`）布局自适应、首次会自动安装。所有 setup 功能同样在网页 **/settings → 初始化** 中提供（自动检测，已完成即禁用）。
+
+> 维护与上游同步流程见 **[docs/SYNC.md](docs/SYNC.md)**。
 
 ---
 

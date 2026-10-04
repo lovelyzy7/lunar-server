@@ -15,7 +15,7 @@ panel fork: [lunar-base-chinese](https://github.com/lovelyzy7/lunar-base-chinese
 ```
 lunar-server/
 ├── server/              # game server: code, assets, db, wizard kept
-├── panel/               # Lunar Base panel (FastAPI); owns setup / patch-deps
+├── panel/               # Lunar Base panel (FastAPI); owns setup / start
 ├── scripts/             # lunar-scripts (master data, APK/IPA/list.bin patchers)
 ├── docker/              # panel image for Docker scheme D
 ├── docs/                # documentation (see DOCKER.md)
@@ -61,8 +61,11 @@ and `server-start.sh --prefer-saved` (reuse the saved wizard config).
 > The panel and the game server use the repository's `server/` by default;
 > `LUNAR_SERVER_DIR` is only needed for non-standard layouts (usually not set).
 
-`panel/setup.sh` (Windows: `panel\setup.bat`) and `panel/patch-deps.sh`
-(`panel\patch-deps.bat`) can also be run manually.
+`panel/setup.sh` (Windows: `panel\setup.bat`) can be run manually: full install, or
+`panel/setup.sh patch-deps` for the patch dependencies only. `panel/start.sh`
+(`panel\start.bat`) is layout-agnostic and auto-initializes on first run.
+
+> The maintenance / upstream-sync workflow is documented in **[docs/SYNC.md](docs/SYNC.md)** (Chinese).
 Everything setup does is also available in the web UI under
 **/settings → Initialization** (auto-detected; finished steps are disabled).
 
