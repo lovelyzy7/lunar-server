@@ -27,7 +27,7 @@ ARG APT_MIRROR=
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONUTF8=1 \
-    TZ=Asia/Shanghai
+    TZ=UTC
 
 # JDK (keytool) + Android build-tools (zipalign/apksigner) live in the image,
 # so the host never needs them.

@@ -6,7 +6,7 @@
 > preservation and research only.
 
 Upstream: [lunar-tear](https://github.com/Walter-Sparrow/lunar-tear) ·
-panel fork: [lunar-base-chinese](https://github.com/lovelyzy7/lunar-base-chinese)
+panel fork: [lunar-base](https://github.com/lovelyzy7/lunar-base)
 
 ---
 
@@ -18,6 +18,7 @@ lunar-server/
 ├── panel/               # Lunar Base panel (FastAPI); owns setup / start
 ├── scripts/             # lunar-scripts (master data, APK/IPA/list.bin patchers)
 ├── docker/              # panel image for Docker scheme D
+├── sync-panel.sh        # sync panel/ from a lunar-base checkout
 ├── docs/                # documentation (see DOCKER.md)
 ├── panel-start.sh(.bat) # one-click panel start (auto-initializes on first run)
 └── server-start.sh(.bat)# one-click game-server start (original wizard, flags pass through)
@@ -81,7 +82,7 @@ Everything setup does is also available in the web UI under
 | Upgrade Manager | Exalt, slabs, companions/remnants/debris, skip cutscenes |
 | Memoir / Mission / Quest | Sets, mission completion, multi-level quest tree complete/restore |
 | Admin → Events | bin.e output path, event/banner toggling (live reload) |
-| **Patch (/patch)** | Local port of the Colab patchers: APK (full apktool pipeline), IPA, master data, list.bin — background jobs, live run console, download/apply |
+| **Patch (/patch)** | Built-in patchers: APK (full apktool pipeline), IPA, master data, list.bin — background jobs, live run console, download/apply |
 | **Settings (/settings)** | Listen address/port (save → auto restart + redirect), login toggle, admin account, game-server mode/status/start/stop, initialization (native mode) |
 
 The panel is **open mode by default** (no login). Exposing it to the public

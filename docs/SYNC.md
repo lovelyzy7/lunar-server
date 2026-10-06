@@ -26,7 +26,18 @@
 
 ## 2. 建立 / 重建同步副本
 
-新环境或需要重建 `panel/` 时，把 lunar-base 的 `main` 同步过去：
+新环境或需要重建 `panel/` 时，把 lunar-base 的 `main` 同步过去（推荐用仓库根自带的脚本）：
+
+```bash
+cd <server-repo>                             # 本项目仓库根
+./sync-panel.sh --base <base-checkout>       # 同步（自动排除运行时目录并报告变化）
+# 常用选项：
+#   --dry-run   只预览将要发生的变更（按内容比较，不写入）
+#   --no-delete 不删除上游已移除的文件
+#   --setup     同步后自动运行 panel/setup.sh（重建 shim 等）
+```
+
+没有 rsync 或想手工操作时，等价命令是：
 
 ```bash
 # 路径替换：<base-checkout> = lunar-base 克隆根；<server-repo> = 本项目仓库根
@@ -51,7 +62,7 @@ rsync -a --delete \
 
 判断方法：**“这个改动会不会出现在 `panel/` 里？”** 会 → 改 lunar-base；不会 → 改本项目。
 
-> 如果 lunar-base 自己还跟踪另一个上游（例如原始的 lunar-base-chinese），先把上游合并进 `main`，再走第 4 节同步。
+> 如果 lunar-base 自己还跟踪另一个上游仓库，先把上游合并进 `main`，再走第 4 节同步。
 
 ---
 
@@ -65,11 +76,13 @@ cd <base-checkout>                     # 进入：lunar-base 克隆根
 git checkout main && git pull          # 拉取最新提交（含上游合并结果）
 # 有本地改动就先 commit；冲突只在这里解决
 
-# ② 同步到本项目
-rsync -a --delete \
-  --exclude=.git --exclude=.venv --exclude=data --exclude=__pycache__ \
-  --exclude=tools/grant/grant --exclude=tools/grant/grant.exe --exclude=tools/apktool \
-  <base-checkout>/ <server-repo>/panel/   # 源：源仓库根；目标：本项目 panel 目录
+# ② 同步到本项目（用自带脚本，自动排除运行时目录并报告变化）
+cd <server-repo>                          # 进入：本项目仓库根
+./sync-panel.sh --base <base-checkout>    # 需要重建 shim 时加 --setup
+# 手工等价命令（无 rsync 脚本环境时）：
+#   rsync -a --delete --exclude=.git --exclude=.venv --exclude=data --exclude=__pycache__ \
+#     --exclude=tools/grant/grant --exclude=tools/grant/grant.exe --exclude=tools/apktool \
+#     <base-checkout>/ <server-repo>/panel/
 
 # ③ 验证（在本项目仓库里操作）
 cd <server-repo>                       # 进入：本项目仓库根
@@ -96,6 +109,7 @@ Windows：手工覆盖时同样排除 `.git`、`.venv`、`data`、`__pycache__`�
 | `panel/setup.sh patch-deps` | 只安装 /patch 依赖（protobuf、apktool、Java/build-tools） |
 | `panel/setup.sh --print-paths` | 打印识别到的 PANEL / TEAR_DIR / SERVER，排查路径问题 |
 | `panel/start.sh`（`start.bat`） | 启动面板；缺 venv/masterdata/shim 时自动先跑 setup |
+| `<server-repo>/sync-panel.sh` | 从 lunar-base 同步 `panel/`（自动排除运行时目录、报告变更、可选 `--setup`） |
 | `<server-repo>/panel-start.sh(.bat)` | 本项目根入口，转发到 `panel/start.*` |
 | `<server-repo>/server-start.sh(.bat)` | 启动游戏服务端（原 wizard，参数透传） |
 

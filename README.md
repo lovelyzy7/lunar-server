@@ -15,6 +15,7 @@ lunar-server/
 ├── panel/               # Lunar Base 管理面板（FastAPI），自持 setup / start
 ├── scripts/             # lunar-scripts 工具（master data、APK/IPA/list.bin 补丁）
 ├── docker/              # Docker 方案 D 的 panel 镜像
+├── sync-panel.sh        # 从 lunar-base 同步 panel/
 ├── docs/                # 文档（含 DOCKER.md）
 ├── panel-start.sh(.bat) # 一键启动面板（首次自动初始化）
 └── server-start.sh(.bat)# 一键启动游戏服务端（原 wizard，参数透传）
@@ -72,7 +73,7 @@ server-start.bat
 | 强化管理 | 角色突破、石板、伙伴/残响/碎片补全、跳过过场 |
 | 回忆 / 任务 / 关卡 | 构建套装、勾选完成任务、多级关卡树完成/还原 |
 | 管理 → 活动 | bin.e 输出路径、启用活动/横幅（含热重载） |
-| **补丁 /patch** | 本地化 Colab 补丁：APK（apktool 全流程）、IPA、master data、list.bin；后台任务 + 实时运行窗口 + 下载/应用 |
+| **补丁 /patch** | 内置补丁工具：APK（apktool 全流程）、IPA、master data、list.bin；后台任务 + 实时运行窗口 + 下载/应用 |
 | **设置 /settings** | 监听地址/端口（保存自动重启并跳转）、登录开关、管理员账户、游戏服务器模式/状态/启停、初始化（本机模式） |
 
 面板默认**开放模式**（无登录）。开放模式暴露到公网由部署者自行决定并承担风险；开启登录控制后，`/login` 才可访问，游戏账号只能看自己的记录，管理员可看全部。
