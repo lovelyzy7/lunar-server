@@ -38,6 +38,11 @@ client/
 # Generated protobuf (regenerate: cd server && make proto)
 server/gen/
 
+# Local tooling / launcher artifacts for the vendored game server (never commit)
+server/protoc
+server/google/
+server/launcher.json
+
 # OS junk
 .DS_Store
 Thumbs.db
