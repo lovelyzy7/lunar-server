@@ -3,9 +3,6 @@ FROM alpine:latest AS builder
 WORKDIR /usr/local/src
 COPY . .
 
-ARG GOPROXY=https://proxy.golang.org,direct
-ENV GOPROXY=${GOPROXY}
-
 RUN apk add --no-cache \
     protobuf \
     protobuf-dev \
@@ -13,6 +10,10 @@ RUN apk add --no-cache \
     make \
     go \
     libcap
+
+RUN go env -w GOPROXY=https://goproxy.cn,direct && \
+    go env -w GOPRIVATE= && \
+    go env -w GOSUMDB=sum.golang.google.cn
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest &&\
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest &&\

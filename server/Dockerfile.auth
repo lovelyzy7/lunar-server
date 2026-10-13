@@ -3,9 +3,6 @@ FROM alpine:latest AS builder
 WORKDIR /usr/local/src
 COPY . .
 
-ARG GOPROXY=https://proxy.golang.org,direct
-ENV GOPROXY=${GOPROXY}
-
 RUN apk add --no-cache go
 
 RUN go build -o auth-server ./cmd/auth-server
